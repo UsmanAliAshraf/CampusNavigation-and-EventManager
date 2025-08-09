@@ -49,45 +49,7 @@ class CampusNavigator:
                 
         except Exception as e:
             print(f"❌ Error loading campus data: {e}")
-            print("⚠️  Using default data instead.")
-            self.load_default_data()
-    
-    def load_default_data(self):
-        """Load default campus data if JSON file is not available."""
-        self.buildings = {
-            "CS Department": {"description": "Computer Science Department", "location": "Main Campus"},
-            "Library": {"description": "Central Library", "location": "Main Campus"},
-            "Cafeteria": {"description": "Student Cafeteria", "location": "Main Campus"},
-            "Auditorium": {"description": "Main Auditorium", "location": "Main Campus"},
-            "Parking": {"description": "Student Parking", "location": "Main Campus"},
-            "Admin Block": {"description": "Administrative Block", "location": "Main Campus"},
-            "Sports Complex": {"description": "Sports and Recreation Center", "location": "Main Campus"},
-            "Hostel": {"description": "Student Hostel", "location": "Main Campus"}
-        }
-        
-        # Add buildings as vertices
-        for building in self.buildings.keys():
-            self.graph.add_vertex(building)
-        
-        # Add routes with distances (in meters)
-        routes = [
-            ("CS Department", "Library", 150),
-            ("CS Department", "Cafeteria", 200),
-            ("Library", "Cafeteria", 100),
-            ("Library", "Auditorium", 300),
-            ("Cafeteria", "Auditorium", 250),
-            ("Cafeteria", "Parking", 180),
-            ("Auditorium", "Admin Block", 120),
-            ("Parking", "Admin Block", 200),
-            ("Admin Block", "Sports Complex", 400),
-            ("Sports Complex", "Hostel", 350),
-            ("Hostel", "CS Department", 500),
-            ("Hostel", "Library", 450)
-        ]
-        
-        # Add edges to graph
-        for from_building, to_building, distance in routes:
-            self.graph.add_edge(from_building, to_building, distance)
+            print("⚠️  Issue in loading campus_data.json. Please ensure the file exists and is valid.")
     
     def set_current_location(self, building: str) -> bool:
         """
