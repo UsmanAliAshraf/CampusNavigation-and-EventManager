@@ -1,0 +1,134 @@
+{
+    "buildings": {
+      "CS Department": {
+        "description": "Computer Science Department",
+        "location": "Main Campus"
+      },
+      "Library": {
+        "description": "Central Library",
+        "location": "Main Campus"
+      },
+      "CRP Department": {
+        "description": "CRP Department",
+        "location": "Main Campus"
+      },
+      "Girls Cafeteria": {
+        "description": "Girls Cafeteria",
+        "location": "Main Campus"
+      },
+      "Main Gate": {
+        "description": "Main Gate",
+        "location": "Main Campus"
+      },
+      "Math Department": {
+        "description": "Mathematics Department",
+        "location": "Main Campus"
+      },
+      "Parking": {
+        "description": "Student Parking",
+        "location": "Main Campus"
+      },
+      "Civil Engineering Department": {
+        "description": "Civil Engineering Department",
+        "location": "Main Campus"
+      },
+      "Bus Stand": {
+        "description": "Bus Stand",
+        "location": "Main Campus"
+      },
+      "SSC Cafe": {
+        "description": "SSC Cafe",
+        "location": "Main Campus"
+      },
+      "Electrical Engineering Department": {
+        "description": "Electrical Engineering Department",
+        "location": "Main Campus"
+      },
+      "PE Department": {
+        "description": "Petroleum Engineering Department",
+        "location": "Main Campus"
+      },
+      "Physics Department": {
+        "description": "Physics Department",
+        "location": "Main Campus"
+      },
+      "ME Department": {
+        "description": "Mechanical Engineering Department",
+        "location": "Main Campus"
+      },
+      "CHE Department": {
+        "description": "Chemical Engineering Department",
+        "location": "Main Campus"
+      },
+      "Admin Block": {
+        "description": "Administrative Block",
+        "location": "Main Campus"
+      },
+      "Auditorium": {
+        "description": "Main Auditorium",
+        "location": "Main Campus"
+      },
+      "Sports Complex": {
+        "description": "Sports and Recreation Center",
+        "location": "Main Campus"
+      },
+      "Hostel": {
+        "description": "Generic Hostel Point",
+        "location": "Main Campus"
+      }
+    },
+"routes": [
+  { "from": "CS Department", "to": "Library", "distance": 60 },
+  { "from": "CS Department", "to": "Girls Cafeteria", "distance": 100 },
+  { "from": "CS Department", "to": "Math Department", "distance": 150 },
+  { "from": "CS Department", "to": "Parking", "distance": 70 },
+  { "from": "CS Department", "to": "Civil Engineering Department", "distance": 50 },
+
+  { "from": "Library", "to": "Electrical Engineering Department", "distance": 50 },
+  { "from": "Library", "to": "PE Department", "distance": 200 },
+  { "from": "Library", "to": "Bus Stand", "distance": 120 },  
+  { "from": "Library", "to": "Main Gate", "distance": 70 },
+  { "from": "Library", "to": "CRP Department", "distance": 30 },
+
+  { "from": "CRP Department", "to": "Library", "distance": 30 },
+  { "from": "CRP Department", "to": "Bus Stand", "distance": 30 },
+
+  { "from": "Girls Cafeteria", "to": "Math Department", "distance": 50 },
+  { "from": "Girls Cafeteria", "to": "Physics Department", "distance": 200 },
+  { "from": "Girls Cafeteria", "to": "ME Department", "distance": 250 },
+  { "from": "Girls Cafeteria", "to": "Civil Engineering Department", "distance": 50 },
+  { "from": "Girls Cafeteria", "to": "Auditorium", "distance": 100 },
+
+  { "from": "Auditorium", "to": "Physics Department", "distance": 100 },
+  { "from": "Auditorium", "to": "ME Department", "distance": 150 },
+  { "from": "Auditorium", "to": "Math Department", "distance": 120 },          
+
+  { "from": "Math Department", "to": "Physics Department", "distance": 60 },
+  { "from": "Math Department", "to": "Parking", "distance": 100 },
+
+  { "from": "Civil Engineering Department", "to": "Library", "distance": 30 },
+  { "from": "Civil Engineering Department", "to": "Chemical Engineering Department", "distance": 150 },
+
+  { "from": "Bus Stand", "to": "SSC Cafe", "distance": 40 },
+  { "from": "Bus Stand", "to": "Admin Block", "distance": 50 },
+
+  { "from": "SSC Cafe", "to": "Sports Complex", "distance": 180 },
+  { "from": "SSC Cafe", "to": "Hostel", "distance": 40 },
+  { "from": "SSC Cafe", "to": "Admin Block", "distance": 100 },
+
+  { "from": "Sports Complex", "to": "Hostel", "distance": 100 },
+  { "from": "Sports Complex", "to": "PE Department", "distance": 200 },
+
+  { "from": "PE Department", "to": "Chemical Engineering Department", "distance": 70 },  
+
+  { "from": "Physics Department", "to": "Auditorium", "distance": 100 },
+
+  { "from": "Main Gate", "to": "Parking", "distance": 100 },
+  { "from": "Main Gate", "to": "Electrical Engineering Department", "distance": 20 }
+  
+
+
+
+]
+
+  }
