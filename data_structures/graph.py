@@ -218,6 +218,9 @@ class Graph:
         if start_vertex not in self.vertices or end_vertex not in self.vertices:
             return []
         
+        if start_vertex == end_vertex:
+            return [([start_vertex], 0.0)]
+        
         paths = []
         queue = deque([(start_vertex, [start_vertex], 0.0)])  # (vertex, path, distance)
         

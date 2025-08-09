@@ -193,67 +193,61 @@ class CampusNavigator:
         while True:
             print("\n🗺️  CAMPUS NAVIGATOR")
             print("=" * 30)
-            print("1. 📍 Set Current Location")
-            print("2. 🗺️  View Campus Map")
-            print("3. 🧭 Navigate to Building")
-            print("4. 🔍 Explore Campus (DFS)")
-            print("5. 📊 Campus Information")
-            print("6. ↩️  Back to Main Menu")
+            print("1. 🗺️  View Campus Map")
+            print("2. 🧭 Navigate to Building")
+            print("3. 🔍 Explore Campus (DFS)")
+            print("4. 📊 Campus Information")
+            print("5. ↩️  Back to Main Menu")
             print("=" * 30)
             
             choice = input("Enter your choice: ").strip()
             
             if choice == "1":
-                self.set_location_menu()
-            elif choice == "2":
                 self.display_campus_map()
                 input("Press Enter to continue...")
-            elif choice == "3":
+            elif choice == "2":
                 self.navigate_menu()
-            elif choice == "4":
+            elif choice == "3":
                 self.explore_campus_menu()
-            elif choice == "5":
+            elif choice == "4":
                 self.show_campus_info()
-            elif choice == "6":
+            elif choice == "5":
                 break
             else:
                 print("❌ Invalid choice. Please try again.")
     
-    def set_location_menu(self):
-        """Menu for setting current location."""
-        print("\n📍 SET CURRENT LOCATION")
-        print("=" * 30)
-        print("Available buildings:")
-        
-        buildings = self.get_all_buildings()
-        for i, building in enumerate(buildings, 1):
-            print(f"{i}. {building}")
-        
-        try:
-            choice = int(input("\nEnter building number: ")) - 1
-            if 0 <= choice < len(buildings):
-                building = buildings[choice]
-                self.set_current_location(building)
-                print(f"✅ Current location set to: {building}")
-            else:
-                print("❌ Invalid choice.")
-        except ValueError:
-            print("❌ Please enter a valid number.")
-        
-        input("Press Enter to continue...")
-    
     def navigate_menu(self):
         """Menu for navigation."""
-        if not self.current_location:
-            print("❌ Please set your current location first.")
-            input("Press Enter to continue...")
-            return
-        
-        print(f"\n🧭 NAVIGATE FROM {self.current_location.upper()}")
+        print(f"\n🧭 NAVIGATE TO BUILDING")
         print("=" * 40)
-        print("Available destinations:")
         
         buildings = self.get_all_buildings()
+        
+        # First, ask for current location if not set
+        if not self.current_location:
+            print("📍 Select your current location:")
+            for i, building in enumerate(buildings, 1):
+                print(f"{i}. {building}")
+            
+            try:
+                choice = int(input("\nEnter current location number: ")) - 1
+                if 0 <= choice < len(buildings):
+                    current_location = buildings[choice]
+                    self.set_current_location(current_location)
+                    print(f"✅ Current location set to: {current_location}")
+                else:
+                    print("❌ Invalid choice.")
+                    input("Press Enter to continue...")
+                    return
+            except ValueError:
+                print("❌ Please enter a valid number.")
+                input("Press Enter to continue...")
+                return
+        else:
+            print(f"📍 Current location: {self.current_location}")
+        
+        # Now ask for destination
+        print(f"\n🎯 Select your destination:")
         for i, building in enumerate(buildings, 1):
             if building != self.current_location:
                 print(f"{i}. {building}")
@@ -275,10 +269,33 @@ class CampusNavigator:
     
     def explore_campus_menu(self):
         """Menu for campus exploration."""
+        print(f"\n🔍 EXPLORE CAMPUS")
+        print("=" * 50)
+        
+        buildings = self.get_all_buildings()
+        
+        # First, ask for current location if not set
         if not self.current_location:
-            print("❌ Please set your current location first.")
-            input("Press Enter to continue...")
-            return
+            print("📍 Select your starting location for exploration:")
+            for i, building in enumerate(buildings, 1):
+                print(f"{i}. {building}")
+            
+            try:
+                choice = int(input("\nEnter starting location number: ")) - 1
+                if 0 <= choice < len(buildings):
+                    current_location = buildings[choice]
+                    self.set_current_location(current_location)
+                    print(f"✅ Starting location set to: {current_location}")
+                else:
+                    print("❌ Invalid choice.")
+                    input("Press Enter to continue...")
+                    return
+            except ValueError:
+                print("❌ Please enter a valid number.")
+                input("Press Enter to continue...")
+                return
+        else:
+            print(f"📍 Starting location: {self.current_location}")
         
         print(f"\n🔍 EXPLORING CAMPUS FROM {self.current_location.upper()}")
         print("=" * 50)
