@@ -39,14 +39,24 @@ def load_css():
     .main {
         background: linear-gradient(135deg, #1a1a1a 0%, #2d1b3d 100%);
         color: #ffffff;
+        padding-top: 0 !important;
+        margin-top: 0 !important;
     }
     
     .stApp {
         background: linear-gradient(135deg, #1a1a1a 0%, #2d1b3d 100%);
+        padding-top: 0 !important;
+        margin-top: 0 !important;
     }
     
     .css-1d391kg {
         background: linear-gradient(135deg, #1a1a1a 0%, #2d1b3d 100%);
+    }
+    
+    /* Remove top spacing for main content */
+    .main .block-container {
+        padding-top: 1rem !important;
+        margin-top: 0 !important;
     }
     
     .stTabs [data-baseweb="tab-list"] {
@@ -210,12 +220,8 @@ def load_campus_data():
 
 # Campus Navigator Module
 def campus_navigator():
-    st.markdown("""
-    <div class="header-gradient">
-        <h1>🗺️ Campus Navigator</h1>
-    </div>
-    """, unsafe_allow_html=True)
-    
+    # Start content from the very top of the page
+    st.markdown("<div style='margin-top: 30px;'></div>", unsafe_allow_html=True)
     buildings, routes = load_campus_data()
     
     if not buildings:
@@ -224,15 +230,13 @@ def campus_navigator():
     
     # Initialize graph if not already done
     if len(st.session_state.graph.get_vertices()) == 0:
-        st.info("🔧 Initializing campus graph...")
         for building in buildings.keys():
             st.session_state.graph.add_vertex(building)
         
         for route in routes:
             st.session_state.graph.add_edge(route["from"], route["to"], route["distance"])
-        
-        st.success(f"✅ Graph initialized with {len(st.session_state.graph.get_vertices())} vertices and {len(routes)} routes")
     
+    # Create columns at the very top
     col1, col2 = st.columns([1, 2])
     
     with col1:
@@ -277,7 +281,17 @@ def campus_navigator():
     
     with col2:
         st.markdown("### 🗺️ Campus Map")
-        display_campus_map(buildings, routes)
+        
+        # Add button to show/hide graph
+        if 'show_graph' not in st.session_state:
+            st.session_state.show_graph = False
+        
+        if st.button("🗺️ Show Campus Graph" if not st.session_state.show_graph else "🗺️ Hide Campus Graph", use_container_width=True):
+            st.session_state.show_graph = not st.session_state.show_graph
+            st.rerun()
+        
+        if st.session_state.show_graph:
+            display_campus_map(buildings, routes)
 
 def find_and_display_routes(start, end):
     # Check if vertices exist
@@ -335,50 +349,124 @@ def display_campus_map(buildings, routes):
     # Create the network graph
     fig = go.Figure()
     
-    # Add edges
+    # Add edges with costs
     for from_node, to_node, distance in edges:
         if from_node in node_positions and to_node in node_positions:
             x0, y0 = node_positions[from_node]
             x1, y1 = node_positions[to_node]
             
+            # Calculate midpoint for cost label
+            mid_x = (x0 + x1) / 2
+            mid_y = (y0 + y1) / 2
+            
+            # Add edge line
             fig.add_trace(go.Scatter(
                 x=[x0, x1],
                 y=[y0, y1],
                 mode='lines',
-                line=dict(color='rgba(255, 165, 0, 0.6)', width=2),
+                line=dict(color='rgba(255, 107, 53, 0.8)', width=3),
                 showlegend=False,
                 hoverinfo='text',
-                text=f"{from_node} → {to_node}<br>Distance: {distance}m"
+                text=f"{from_node} → {to_node}<br>Distance: {distance}m",
+                hoverlabel=dict(bgcolor='rgba(255, 107, 53, 0.9)', font_size=12)
+            ))
+            
+            # Add cost label on edge
+            fig.add_trace(go.Scatter(
+                x=[mid_x],
+                y=[mid_y],
+                mode='text',
+                text=[f"{distance}m"],
+                textposition="middle center",
+                textfont=dict(color='white', size=10, family='Arial Black'),
+                showlegend=False,
+                hoverinfo='skip'
             ))
     
-    # Add nodes
+    # Add nodes with shortened names
     node_x = [node_positions[node][0] for node in nodes]
     node_y = [node_positions[node][1] for node in nodes]
+    
+    # Shorten node names by removing "Department"
+    shortened_names = []
+    for node in nodes:
+        if "Department" in node:
+            # Extract the abbreviation based on the actual department names
+            if "CS Department" in node:
+                shortened_names.append("CS")
+            elif "Civil Engineering Department" in node:
+                shortened_names.append("CE")
+            elif "CHE Department" in node:
+                shortened_names.append("CHE")
+            elif "Electrical Engineering Department" in node:
+                shortened_names.append("EE")
+            elif "ME Department" in node:
+                shortened_names.append("ME")
+            elif "PE Department" in node:
+                shortened_names.append("PE")
+            elif "Math Department" in node:
+                shortened_names.append("MATH")
+            elif "Physics Department" in node:
+                shortened_names.append("PHY")
+            elif "CRP Department" in node:
+                shortened_names.append("CRP")
+            else:
+                # For other departments, take first word
+                shortened_names.append(node.split()[0])
+        else:
+            shortened_names.append(node)
+    
+    # Create color gradient for nodes - each node gets a different color
+    colors = [
+        '#FF6B35', '#FF8C00', '#FFA500', '#FFB347', '#FFC04D', '#FFD700', '#FFE135', '#FFF200',
+        '#FF69B4', '#FF1493', '#FF00FF', '#8A2BE2', '#9370DB', '#4169E1', '#00BFFF', '#00CED1',
+        '#00FA9A', '#32CD32', '#ADFF2F', '#FFFF00', '#FFD700', '#FFA500', '#FF6347', '#FF4500'
+    ]
+    node_colors = [colors[i % len(colors)] for i in range(len(nodes))]
     
     fig.add_trace(go.Scatter(
         x=node_x,
         y=node_y,
         mode='markers+text',
         marker=dict(
-            size=20,
-            color='rgba(255, 165, 0, 0.8)',
-            line=dict(color='rgba(255, 165, 0, 1)', width=2)
+            size=25,
+            color=node_colors,
+            line=dict(color='white', width=3),
+            symbol='circle'
         ),
-        text=nodes,
+        text=shortened_names,
         textposition="middle center",
-        textfont=dict(color='white', size=10),
-        showlegend=False
+        textfont=dict(color='black', size=12, family='Arial Black'),
+        showlegend=False,
+        hoverinfo='text',
+        hovertext=[f"{node}<br>{buildings[node]['description']}" for node in nodes],
+        hoverlabel=dict(bgcolor='rgba(255, 107, 53, 0.9)', font_size=12)
     ))
     
     fig.update_layout(
-        title="Campus Network Map",
+        title=dict(
+            text="Interactive Campus Network Map",
+            font=dict(size=20, color='white'),
+            x=0.5
+        ),
         showlegend=False,
-        plot_bgcolor='rgba(0,0,0,0)',
-        paper_bgcolor='rgba(0,0,0,0)',
-        xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-        yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-        margin=dict(l=0, r=0, t=30, b=0),
-        height=400
+        plot_bgcolor='#616161',
+        paper_bgcolor='#616161',
+        xaxis=dict(
+            showgrid=False, 
+            zeroline=False, 
+            showticklabels=False,
+            range=[-1.2, 1.2]
+        ),
+        yaxis=dict(
+            showgrid=False, 
+            zeroline=False, 
+            showticklabels=False,
+            range=[-1.2, 1.2]
+        ),
+        margin=dict(l=0, r=0, t=50, b=0),
+        height=500,
+        hovermode='closest'
     )
     
     st.plotly_chart(fig, use_container_width=True)
