@@ -1,6 +1,6 @@
 # 🏫 Campus Connect Navigation & Event Planner System
 
-A comprehensive CLI-based application for UET students to navigate campus, manage events, schedule tasks, and search events efficiently using various data structures and algorithms.
+A comprehensive GUI-based application for UET students to navigate campus, manage events, schedule tasks, and search events efficiently using various data structures and algorithms.
 
 ## 🎯 Project Overview
 
@@ -16,12 +16,17 @@ This project demonstrates real-world application of Data Structures and Algorith
 
 ```
 campus_connect/
-├── main.py                    # Main application entry point
-├── CLI.py                     # CLI menu interface
+├── run_app.py                # Main application launcher
+├── GUI/
+│   ├── streamlit_app.py      # Main GUI application
+│   ├── run_gui.py           # GUI launcher
+│   ├── requirements.txt     # GUI dependencies
+│   └── README.md           # GUI documentation
 ├── navigator.py               # Campus navigation module
 ├── events_manager.py          # Event management module
 ├── task_scheduler.py          # Task scheduling module
 ├── event_search_tree.py       # Event search tree module
+├── file_handler.py           # File handling for data persistence
 ├── data_structures/
 │   ├── __init__.py
 │   ├── graph.py              # Graph implementation
@@ -29,8 +34,7 @@ campus_connect/
 │   ├── stack.py              # Stack for undo/redo
 │   ├── queue.py              # Queue for tasks
 │   └── binary_tree.py        # Binary search tree
-├── data/                     # Data files (future)
-└── tests/                    # Test files (future)
+└── data/                     # Data files (JSON storage)
 ```
 
 ## 🚀 Features
@@ -67,24 +71,39 @@ campus_connect/
 
 ### Prerequisites
 - Python 3.7 or higher
-- No external dependencies required (uses only standard library)
+- Streamlit (for GUI)
+- Additional dependencies listed in `GUI/requirements.txt`
 
 ### Running the Application
 
 1. **Clone or download the project**
 2. **Navigate to the project directory**
-3. **Run the main application:**
+3. **Install GUI dependencies:**
    ```bash
-   python main.py
+   cd GUI
+   pip install -r requirements.txt
+   ```
+4. **Run the GUI application:**
+   ```bash
+   # From root directory
+   python run_app.py
+   
+   # Or from GUI directory
+   cd GUI
+   python run_gui.py
+   
+   # Or directly with Streamlit
+   streamlit run GUI/streamlit_app.py
    ```
 
 ### Using the Application
 
-1. **Main Menu**: Choose from 4 modules or view about information
-2. **Campus Navigator**: Set location and navigate to buildings
-3. **Event Manager**: Manage events with undo/redo functionality
-4. **Task Scheduler**: Schedule and complete tasks using FIFO
-5. **Event Search Tree**: Search and categorize events efficiently
+1. **Web Interface**: The application opens in your default web browser
+2. **Campus Navigator**: Set location and navigate to buildings using graph algorithms
+3. **Event Manager**: Manage events with undo/redo functionality using linked lists and stacks
+4. **Task Scheduler**: Schedule and complete tasks using FIFO queue operations
+5. **Event Search Tree**: Search and categorize events efficiently using binary search trees
+6. **Data Persistence**: All data is automatically saved to JSON files in the `data/` directory
 
 ## 📊 Data Structures & Algorithms Used
 
@@ -124,7 +143,7 @@ This project demonstrates:
 3. **Data structure integration** across multiple modules
 4. **Time/space complexity** considerations
 5. **Modular software design** principles
-6. **User interface design** for CLI applications
+6. **User interface design** for web applications
 7. **Error handling** and input validation
 8. **Documentation** and code organization
 
@@ -144,17 +163,11 @@ This project demonstrates:
 
 ## 🚀 Future Enhancements
 
-### GUI Implementation
-- **Tkinter/PyQt** interface for better user experience
-- **Visual campus map** with interactive navigation
+### Advanced Features
+- **Mobile app** version
+- **Real-time notifications** for upcoming events
 - **Calendar view** for events and tasks
 - **Drag-and-drop** functionality
-
-### Advanced Features
-- **Data persistence** with JSON/database storage
-- **User authentication** and profiles
-- **Real-time notifications** for upcoming events
-- **Mobile app** version
 - **API integration** for external services
 
 ### Performance Optimizations
@@ -162,6 +175,12 @@ This project demonstrates:
 - **Graph caching** for faster navigation
 - **Lazy loading** for large datasets
 - **Memory optimization** for large event lists
+
+### Data Management
+- **User authentication** and profiles
+- **Data backup** and recovery
+- **Import/export** functionality
+- **Multi-user support**
 
 ## 📝 Contributing
 

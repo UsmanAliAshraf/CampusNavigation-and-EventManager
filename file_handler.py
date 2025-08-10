@@ -6,7 +6,7 @@ Handles saving and loading events and tasks data to/from JSON files.
 import json
 import os
 from typing import List, Dict, Any
-from datetime import datetime
+from datetime import datetime, date, time
 
 class FileHandler:
     """Handles file operations for events and tasks data."""
@@ -36,8 +36,18 @@ class FileHandler:
             True if save successful, False otherwise
         """
         try:
+            # Convert date and time objects to strings for JSON serialization
+            serializable_events = []
+            for event in events_list:
+                event_copy = event.copy()
+                if 'date' in event_copy and isinstance(event_copy['date'], date):
+                    event_copy['date'] = event_copy['date'].isoformat()
+                if 'time' in event_copy and isinstance(event_copy['time'], time):
+                    event_copy['time'] = event_copy['time'].isoformat()
+                serializable_events.append(event_copy)
+            
             data = {
-                "events": events_list,
+                "events": serializable_events,
                 "last_updated": datetime.now().isoformat()
             }
             
@@ -62,7 +72,8 @@ class FileHandler:
             
             with open(self.events_file, 'r', encoding='utf-8') as file:
                 data = json.load(file)
-                return data.get("events", [])
+                events = data.get("events", [])
+                return events
         except Exception as e:
             print(f"❌ Error loading events: {e}")
             return []
@@ -78,8 +89,16 @@ class FileHandler:
             True if save successful, False otherwise
         """
         try:
+            # Convert date objects to strings for JSON serialization
+            serializable_tasks = []
+            for task in tasks_list:
+                task_copy = task.copy()
+                if 'deadline' in task_copy and isinstance(task_copy['deadline'], date):
+                    task_copy['deadline'] = task_copy['deadline'].isoformat()
+                serializable_tasks.append(task_copy)
+            
             data = {
-                "tasks": tasks_list,
+                "tasks": serializable_tasks,
                 "last_updated": datetime.now().isoformat()
             }
             
@@ -104,7 +123,8 @@ class FileHandler:
             
             with open(self.tasks_file, 'r', encoding='utf-8') as file:
                 data = json.load(file)
-                return data.get("tasks", [])
+                tasks = data.get("tasks", [])
+                return tasks
         except Exception as e:
             print(f"❌ Error loading tasks: {e}")
             return []

@@ -204,7 +204,9 @@ def init_session_state():
     if 'tasks_list' not in st.session_state:
         st.session_state.tasks_list = []
     if 'file_handler' not in st.session_state:
-        st.session_state.file_handler = FileHandler()
+        # Use absolute path to data directory
+        data_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
+        st.session_state.file_handler = FileHandler(data_dir)
     
     # Load data from files
     load_data_from_files()
@@ -244,40 +246,10 @@ def load_data_from_files():
             if task['status'] == 'Pending':
                 st.session_state.tasks.enqueue(task)
         
-        st.success("✅ Data loaded successfully from files!")
-        
     except Exception as e:
         st.error(f"❌ Error loading data from files: {e}")
 
-def save_data_to_files():
-    """Save events and tasks data to JSON files."""
-    try:
-        # Save events list
-        st.session_state.file_handler.save_events(st.session_state.events_list)
-        
-        # Save tasks list
-        st.session_state.file_handler.save_tasks(st.session_state.tasks_list)
-        
-        # Save event tree data
-        event_tree_data = []
-        all_events = st.session_state.event_tree.inorder_traversal()
-        for key, event_node in all_events:
-            event_tree_data.append({
-                'event_id': event_node.event_id,
-                'title': event_node.title,
-                'date': event_node.date,
-                'time': event_node.time,
-                'location': event_node.location,
-                'category': event_node.category,
-                'priority': event_node.priority,
-                'description': event_node.description
-            })
-        st.session_state.file_handler.save_event_tree_data(event_tree_data)
-        
-        st.success("✅ Data saved successfully to files!")
-        
-    except Exception as e:
-        st.error(f"❌ Error saving data to files: {e}")
+
 
 # Load campus data
 def load_campus_data():
@@ -600,8 +572,24 @@ def event_manager():
                     st.session_state.events.insert_at_end(event)
                     st.session_state.event_tree.insert(event_name, event_node)
                     
-                    # Save data to files
-                    save_data_to_files()
+                    # Save events to file immediately
+                    st.session_state.file_handler.save_events(st.session_state.events_list)
+                    
+                    # Save event tree data
+                    event_tree_data = []
+                    all_events = st.session_state.event_tree.inorder_traversal()
+                    for key, event_node in all_events:
+                        event_tree_data.append({
+                            'event_id': event_node.event_id,
+                            'title': event_node.title,
+                            'date': event_node.date,
+                            'time': event_node.time,
+                            'location': event_node.location,
+                            'category': event_node.category,
+                            'priority': event_node.priority,
+                            'description': event_node.description
+                        })
+                    st.session_state.file_handler.save_event_tree_data(event_tree_data)
                     
                     st.success(f"✅ Event '{event_name}' added successfully!")
                     st.rerun()
@@ -677,8 +665,8 @@ def task_scheduler():
                     # Add to queue
                     st.session_state.tasks.enqueue(task)
                     
-                    # Save data to files
-                    save_data_to_files()
+                    # Save tasks to file immediately
+                    st.session_state.file_handler.save_tasks(st.session_state.tasks_list)
                     
                     st.success(f"✅ Task '{task_name}' added successfully!")
                     st.rerun()
@@ -715,8 +703,8 @@ def task_scheduler():
                         task['status'] = 'Completed'
                         break
                 
-                # Save data to files
-                save_data_to_files()
+                # Save tasks to file immediately
+                st.session_state.file_handler.save_tasks(st.session_state.tasks_list)
                 
                 st.success(f"✅ Completed: {completed_task['name']}")
                 st.rerun()
@@ -851,36 +839,6 @@ def main():
         st.metric("Buildings", len(st.session_state.graph.get_vertices()))
         st.metric("Events", len(st.session_state.events_list))
         st.metric("Tasks", len([t for t in st.session_state.tasks_list if t['status'] == 'Pending']))
-        
-        st.markdown("---")
-        
-        # Data Management
-        st.markdown("### 💾 Data Management")
-        
-        col_save, col_clear = st.columns(2)
-        with col_save:
-            if st.button("💾 Save Data", use_container_width=True):
-                save_data_to_files()
-        
-        with col_clear:
-            if st.button("🗑️ Clear All", use_container_width=True):
-                if st.session_state.file_handler.clear_all_data():
-                    st.session_state.events_list = []
-                    st.session_state.tasks_list = []
-                    st.session_state.event_tree.clear()
-                    st.session_state.tasks.clear()
-                    st.success("✅ All data cleared!")
-                    st.rerun()
-                else:
-                    st.error("❌ Error clearing data")
-        
-        # Data Info
-        data_info = st.session_state.file_handler.get_data_info()
-        st.markdown("#### 📊 Data Files")
-        for file_name, info in data_info.items():
-            status = "✅" if info['exists'] else "❌"
-            size_kb = info['size'] / 1024 if info['size'] > 0 else 0
-            st.markdown(f"{status} {file_name}: {size_kb:.1f} KB")
         
         st.markdown("---")
         
