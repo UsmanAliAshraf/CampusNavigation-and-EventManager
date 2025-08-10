@@ -1,16 +1,9 @@
-#!/usr/bin/env python3
-"""
-Campus Connect - Streamlit GUI Launcher
-This script launches the Streamlit GUI application.
-"""
-
 import subprocess
 import sys
 import os
 
 def main():
-    """Launch the Streamlit GUI application."""
-    print("🏫 Campus Connect - Streamlit GUI")
+    print("🏫 Campus Connect and Plan")
     print("=" * 50)
     
     # Check if streamlit is installed

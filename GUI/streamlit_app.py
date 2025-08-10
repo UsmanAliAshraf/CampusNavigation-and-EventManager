@@ -18,13 +18,14 @@ try:
     from data_structures.stack import Stack
     from data_structures.queue import Queue
     from data_structures.binary_tree import BinarySearchTree
+    from file_handler import FileHandler
 except ImportError as e:
     st.error(f"Error importing data structures: {e}")
     st.stop()
 
 # Page configuration
 st.set_page_config(
-    page_title="Campus Connect - Navigation & Event Planner",
+    page_title="Campus Connect and Plans",
     page_icon="🏫",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -202,6 +203,81 @@ def init_session_state():
         st.session_state.events_list = []
     if 'tasks_list' not in st.session_state:
         st.session_state.tasks_list = []
+    if 'file_handler' not in st.session_state:
+        st.session_state.file_handler = FileHandler()
+    
+    # Load data from files
+    load_data_from_files()
+
+def load_data_from_files():
+    """Load events and tasks data from JSON files."""
+    try:
+        # Load events from file
+        events_list = st.session_state.file_handler.load_events()
+        st.session_state.events_list = events_list
+        
+        # Load tasks from file
+        tasks_list = st.session_state.file_handler.load_tasks()
+        st.session_state.tasks_list = tasks_list
+        
+        # Load event tree data and rebuild tree
+        event_tree_data = st.session_state.file_handler.load_event_tree_data()
+        st.session_state.event_tree.clear()
+        
+        for event_data in event_tree_data:
+            from event_search_tree import EventNode
+            event_node = EventNode(
+                event_id=event_data['event_id'],
+                title=event_data['title'],
+                date=event_data['date'],
+                time=event_data['time'],
+                location=event_data['location'],
+                category=event_data['category'],
+                priority=event_data['priority'],
+                description=event_data['description']
+            )
+            st.session_state.event_tree.insert(event_data['title'], event_node)
+        
+        # Rebuild queue from tasks list
+        st.session_state.tasks.clear()
+        for task in tasks_list:
+            if task['status'] == 'Pending':
+                st.session_state.tasks.enqueue(task)
+        
+        st.success("✅ Data loaded successfully from files!")
+        
+    except Exception as e:
+        st.error(f"❌ Error loading data from files: {e}")
+
+def save_data_to_files():
+    """Save events and tasks data to JSON files."""
+    try:
+        # Save events list
+        st.session_state.file_handler.save_events(st.session_state.events_list)
+        
+        # Save tasks list
+        st.session_state.file_handler.save_tasks(st.session_state.tasks_list)
+        
+        # Save event tree data
+        event_tree_data = []
+        all_events = st.session_state.event_tree.inorder_traversal()
+        for key, event_node in all_events:
+            event_tree_data.append({
+                'event_id': event_node.event_id,
+                'title': event_node.title,
+                'date': event_node.date,
+                'time': event_node.time,
+                'location': event_node.location,
+                'category': event_node.category,
+                'priority': event_node.priority,
+                'description': event_node.description
+            })
+        st.session_state.file_handler.save_event_tree_data(event_tree_data)
+        
+        st.success("✅ Data saved successfully to files!")
+        
+    except Exception as e:
+        st.error(f"❌ Error saving data to files: {e}")
 
 # Load campus data
 def load_campus_data():
@@ -222,8 +298,7 @@ def load_campus_data():
 def campus_navigator():
     # Start content from the very top of the page
     st.markdown("<div style='margin-top: 30px;'></div>", unsafe_allow_html=True)
-    buildings, routes = load_campus_data()
-    
+    buildings, routes = load_campus_data()    
     if not buildings:
         st.error("No campus data available!")
         return
@@ -445,7 +520,7 @@ def display_campus_map(buildings, routes):
     
     fig.update_layout(
         title=dict(
-            text="Interactive Campus Network Map",
+            text="Campus Map",
             font=dict(size=20, color='white'),
             x=0.5
         ),
@@ -494,7 +569,7 @@ def event_manager():
             
             if st.form_submit_button("➕ Add Event", use_container_width=True):
                 if event_name and event_location:
-                    # Create event object
+                    # Create event object for list
                     event = {
                         'name': event_name,
                         'date': event_date,
@@ -505,12 +580,28 @@ def event_manager():
                         'id': len(st.session_state.events_list) + 1
                     }
                     
+                    # Create EventNode object for binary tree
+                    from event_search_tree import EventNode
+                    event_node = EventNode(
+                        event_id=f"EVT_{len(st.session_state.events_list) + 1:04d}",
+                        title=event_name,
+                        date=str(event_date),
+                        time=str(event_time),
+                        location=event_location,
+                        category="General",
+                        priority=event_priority,
+                        description=event_description
+                    )
+                    
                     # Add to events list
                     st.session_state.events_list.append(event)
                     
                     # Add to data structures
                     st.session_state.events.insert_at_end(event)
-                    st.session_state.event_tree.insert(event['name'], event)
+                    st.session_state.event_tree.insert(event_name, event_node)
+                    
+                    # Save data to files
+                    save_data_to_files()
                     
                     st.success(f"✅ Event '{event_name}' added successfully!")
                     st.rerun()
@@ -586,6 +677,9 @@ def task_scheduler():
                     # Add to queue
                     st.session_state.tasks.enqueue(task)
                     
+                    # Save data to files
+                    save_data_to_files()
+                    
                     st.success(f"✅ Task '{task_name}' added successfully!")
                     st.rerun()
                 else:
@@ -611,18 +705,23 @@ def task_scheduler():
             st.info("No tasks added yet.")
         
         if st.button("✅ Complete Next Task", use_container_width=True):
-            if st.session_state.tasks_list:
-                # Find first pending task
+            if not st.session_state.tasks.is_empty():
+                # Properly dequeue the next task from the queue
+                completed_task = st.session_state.tasks.dequeue()
+                
+                # Update the task status in the list
                 for task in st.session_state.tasks_list:
-                    if task['status'] == 'Pending':
+                    if task['id'] == completed_task['id']:
                         task['status'] = 'Completed'
-                        st.success(f"Completed: {task['name']}")
-                        st.rerun()
                         break
-                else:
-                    st.info("No pending tasks to complete")
+                
+                # Save data to files
+                save_data_to_files()
+                
+                st.success(f"✅ Completed: {completed_task['name']}")
+                st.rerun()
             else:
-                st.info("No tasks to complete")
+                st.info("No pending tasks to complete")
 
 # Event Search Tree Module
 def event_search_tree():
@@ -676,19 +775,50 @@ def perform_search(search_type, search_term):
     
     if search_type == "By Name":
         # Search by name using binary tree
-        for event in st.session_state.events_list:
-            if search_term.lower() in event['name'].lower():
-                results.append(event)
+        # Convert search term to lowercase for case-insensitive search
+        search_key = search_term.lower()
+        # Get all events from the tree and filter by name
+        all_events = st.session_state.event_tree.inorder_traversal()
+        for key, event_node in all_events:
+            if search_key in event_node.title.lower():
+                results.append({
+                    'name': event_node.title,
+                    'date': event_node.date,
+                    'time': event_node.time,
+                    'location': event_node.location,
+                    'priority': event_node.priority,
+                    'category': event_node.category,
+                    'description': event_node.description
+                })
     elif search_type == "By Date":
-        # Search by date
-        for event in st.session_state.events_list:
-            if event['date'] == search_term:
-                results.append(event)
+        # Search by date using binary tree
+        search_date = str(search_term)
+        all_events = st.session_state.event_tree.inorder_traversal()
+        for key, event_node in all_events:
+            if event_node.date == search_date:
+                results.append({
+                    'name': event_node.title,
+                    'date': event_node.date,
+                    'time': event_node.time,
+                    'location': event_node.location,
+                    'priority': event_node.priority,
+                    'category': event_node.category,
+                    'description': event_node.description
+                })
     elif search_type == "By Priority":
-        # Search by priority
-        for event in st.session_state.events_list:
-            if event['priority'] == search_term:
-                results.append(event)
+        # Search by priority using binary tree
+        all_events = st.session_state.event_tree.inorder_traversal()
+        for key, event_node in all_events:
+            if event_node.priority == search_term:
+                results.append({
+                    'name': event_node.title,
+                    'date': event_node.date,
+                    'time': event_node.time,
+                    'location': event_node.location,
+                    'priority': event_node.priority,
+                    'category': event_node.category,
+                    'description': event_node.description
+                })
     
     return results
 
@@ -721,6 +851,36 @@ def main():
         st.metric("Buildings", len(st.session_state.graph.get_vertices()))
         st.metric("Events", len(st.session_state.events_list))
         st.metric("Tasks", len([t for t in st.session_state.tasks_list if t['status'] == 'Pending']))
+        
+        st.markdown("---")
+        
+        # Data Management
+        st.markdown("### 💾 Data Management")
+        
+        col_save, col_clear = st.columns(2)
+        with col_save:
+            if st.button("💾 Save Data", use_container_width=True):
+                save_data_to_files()
+        
+        with col_clear:
+            if st.button("🗑️ Clear All", use_container_width=True):
+                if st.session_state.file_handler.clear_all_data():
+                    st.session_state.events_list = []
+                    st.session_state.tasks_list = []
+                    st.session_state.event_tree.clear()
+                    st.session_state.tasks.clear()
+                    st.success("✅ All data cleared!")
+                    st.rerun()
+                else:
+                    st.error("❌ Error clearing data")
+        
+        # Data Info
+        data_info = st.session_state.file_handler.get_data_info()
+        st.markdown("#### 📊 Data Files")
+        for file_name, info in data_info.items():
+            status = "✅" if info['exists'] else "❌"
+            size_kb = info['size'] / 1024 if info['size'] > 0 else 0
+            st.markdown(f"{status} {file_name}: {size_kb:.1f} KB")
         
         st.markdown("---")
         

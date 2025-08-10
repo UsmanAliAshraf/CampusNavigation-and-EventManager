@@ -1,7 +1,6 @@
 from typing import Optional, Any, List
 
 class Node:
-    """Node class for doubly linked list."""
     
     def __init__(self, data: Any):
         self.data = data
@@ -9,27 +8,20 @@ class Node:
         self.next: Optional[Node] = None
 
 class DoublyLinkedList:
-    """
-    Doubly linked list implementation for event management.
-    Supports efficient insertion, deletion, and traversal.
-    """
+
     
     def __init__(self):
-        """Initialize an empty doubly linked list."""
         self.head: Optional[Node] = None
         self.tail: Optional[Node] = None
         self.size = 0
     
     def is_empty(self) -> bool:
-        """Check if the list is empty."""
         return self.head is None
     
     def get_size(self) -> int:
-        """Get the size of the list."""
         return self.size
     
     def insert_at_beginning(self, data: Any) -> None:
-        """Insert a new node at the beginning of the list."""
         new_node = Node(data)
         
         if self.is_empty():
@@ -43,7 +35,6 @@ class DoublyLinkedList:
         self.size += 1
     
     def insert_at_end(self, data: Any) -> None:
-        """Insert a new node at the end of the list."""
         new_node = Node(data)
         
         if self.is_empty():
@@ -57,16 +48,7 @@ class DoublyLinkedList:
         self.size += 1
     
     def insert_at_position(self, data: Any, position: int) -> bool:
-        """
-        Insert a new node at a specific position.
-        
-        Args:
-            data: Data to insert
-            position: Position to insert at (0-indexed)
-            
-        Returns:
-            True if insertion successful, False otherwise
-        """
+
         if position < 0 or position > self.size:
             return False
         
@@ -94,7 +76,6 @@ class DoublyLinkedList:
         return True
     
     def delete_from_beginning(self) -> Optional[Any]:
-        """Delete and return the first node's data."""
         if self.is_empty():
             return None
         
@@ -111,7 +92,6 @@ class DoublyLinkedList:
         return data
     
     def delete_from_end(self) -> Optional[Any]:
-        """Delete and return the last node's data."""
         if self.is_empty():
             return None
         
@@ -128,15 +108,7 @@ class DoublyLinkedList:
         return data
     
     def delete_at_position(self, position: int) -> Optional[Any]:
-        """
-        Delete node at a specific position.
-        
-        Args:
-            position: Position to delete from (0-indexed)
-            
-        Returns:
-            Data of deleted node, or None if position invalid
-        """
+
         if position < 0 or position >= self.size:
             return None
         
@@ -160,15 +132,7 @@ class DoublyLinkedList:
         return data
     
     def delete_by_value(self, value: Any) -> bool:
-        """
-        Delete the first occurrence of a node with the given value.
-        
-        Args:
-            value: Value to delete
-            
-        Returns:
-            True if deletion successful, False otherwise
-        """
+
         current = self.head
         
         while current:
@@ -187,15 +151,7 @@ class DoublyLinkedList:
         return False
     
     def search(self, value: Any) -> Optional[int]:
-        """
-        Search for a value in the list.
-        
-        Args:
-            value: Value to search for
-            
-        Returns:
-            Position of first occurrence, or None if not found
-        """
+
         current = self.head
         position = 0
         
@@ -208,15 +164,7 @@ class DoublyLinkedList:
         return None
     
     def get_at_position(self, position: int) -> Optional[Any]:
-        """
-        Get data at a specific position.
-        
-        Args:
-            position: Position to get data from (0-indexed)
-            
-        Returns:
-            Data at position, or None if position invalid
-        """
+
         if position < 0 or position >= self.size:
             return None
         
@@ -228,16 +176,7 @@ class DoublyLinkedList:
         return current.data
     
     def update_at_position(self, position: int, new_data: Any) -> bool:
-        """
-        Update data at a specific position.
-        
-        Args:
-            position: Position to update (0-indexed)
-            new_data: New data to set
-            
-        Returns:
-            True if update successful, False otherwise
-        """
+
         if position < 0 or position >= self.size:
             return False
         
@@ -250,7 +189,6 @@ class DoublyLinkedList:
         return True
     
     def to_list(self) -> List[Any]:
-        """Convert the linked list to a Python list."""
         result = []
         current = self.head
         
@@ -261,13 +199,11 @@ class DoublyLinkedList:
         return result
     
     def clear(self) -> None:
-        """Clear all nodes from the list."""
         self.head = None
         self.tail = None
         self.size = 0
     
     def display(self) -> None:
-        """Display the linked list (for debugging)."""
         if self.is_empty():
             print("Empty list")
             return
@@ -279,7 +215,6 @@ class DoublyLinkedList:
         print("None")
     
     def display_reverse(self) -> None:
-        """Display the linked list in reverse order (for debugging)."""
         if self.is_empty():
             print("Empty list")
             return

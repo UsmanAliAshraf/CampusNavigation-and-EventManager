@@ -7,6 +7,8 @@ from data_structures.linked_list import DoublyLinkedList
 from data_structures.stack import Stack
 from typing import Dict, List, Optional
 from datetime import datetime
+import json
+import os
 
 class Event:
     """Event class to store event information."""
@@ -48,6 +50,10 @@ class EventsManager:
         self.ADD_EVENT = "ADD"
         self.DELETE_EVENT = "DELETE"
         self.EDIT_EVENT = "EDIT"
+        
+        # File handling
+        self.events_file = os.path.join("data", "events.json")
+        self.load_events_from_file()
     
     def add_event(self, event: Event) -> bool:
         """
