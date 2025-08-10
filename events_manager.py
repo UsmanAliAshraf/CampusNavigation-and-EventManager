@@ -153,6 +153,19 @@ class EventsManager:
         command = self.undo_stack.pop()
         
         if command['type'] == self.ADD_EVENT:
+            # Undo delete: add the event back
+            success = self.events_list.insert_at_position(command['event'], command['position'])
+            if success:
+                # Store for redo
+                redo_command = {
+                    'type': self.DELETE_EVENT,
+                    'position': command['position'],
+                    'event': command['event']
+                }
+                self.redo_stack.push(redo_command)
+                return True
+        
+        elif command['type'] == self.DELETE_EVENT:
             # Undo add: delete the event
             deleted_event = self.events_list.delete_at_position(command['position'])
             if deleted_event:
@@ -164,18 +177,6 @@ class EventsManager:
                 }
                 self.redo_stack.push(redo_command)
                 return True
-        
-        elif command['type'] == self.DELETE_EVENT:
-            # Undo delete: add the event back
-            self.events_list.insert_at_position(command['event'], command['position'])
-            # Store for redo
-            redo_command = {
-                'type': self.DELETE_EVENT,
-                'position': command['position'],
-                'event': command['event']
-            }
-            self.redo_stack.push(redo_command)
-            return True
         
         elif command['type'] == self.EDIT_EVENT:
             # Undo edit: restore old event
