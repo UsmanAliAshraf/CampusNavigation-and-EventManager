@@ -572,6 +572,14 @@ def event_manager():
                     st.session_state.events.insert_at_end(event)
                     st.session_state.event_tree.insert(event_name, event_node)
                     
+                    # Store for undo
+                    st.session_state.undo_stack.push({
+                        'type': 'add_event',
+                        'data': event
+                    })
+                    # Clear redo stack when new action is performed
+                    st.session_state.redo_stack.clear()
+                    
                     # Save events to file immediately
                     st.session_state.file_handler.save_events(st.session_state.events_list)
                     
@@ -616,17 +624,131 @@ def event_manager():
         
         col2a, col2b = st.columns(2)
         with col2a:
-            if st.button("↩️ Undo", use_container_width=True):
-                if st.session_state.events_list:
-                    removed_event = st.session_state.events_list.pop()
-                    st.success(f"Undid: {removed_event['name']}")
-                    st.rerun()
+            if st.button("↩️ Undo Event", use_container_width=True):
+                if not st.session_state.undo_stack.is_empty():
+                    action = st.session_state.undo_stack.pop()
+                    if action['type'] == 'add_event':
+                        # Undo add: remove the event
+                        if st.session_state.events_list:
+                            removed_event = st.session_state.events_list.pop()
+                            # Remove from BST
+                            st.session_state.event_tree.delete(removed_event['name'])
+                            # Store for redo
+                            st.session_state.redo_stack.push({
+                                'type': 'delete_event',
+                                'data': removed_event
+                            })
+                            # Save to file
+                            st.session_state.file_handler.save_events(st.session_state.events_list)
+                            # Save updated BST to file
+                            event_tree_data = []
+                            all_events = st.session_state.event_tree.inorder_traversal()
+                            for key, event_node in all_events:
+                                event_tree_data.append({
+                                    'event_id': event_node.event_id,
+                                    'title': event_node.title,
+                                    'date': event_node.date,
+                                    'time': event_node.time,
+                                    'location': event_node.location,
+                                    'category': event_node.category,
+                                    'priority': event_node.priority,
+                                    'description': event_node.description
+                                })
+                            st.session_state.file_handler.save_event_tree_data(event_tree_data)
+                            st.success(f"↩️ Undid: Added '{removed_event['name']}'")
+                            st.rerun()
+                    elif action['type'] == 'delete_event':
+                        # Undo delete: add the event back
+                        event_data = action['data']
+                        st.session_state.events_list.append(event_data)
+                        # Add back to BST
+                        from event_search_tree import EventNode
+                        event_node = EventNode(
+                            event_id=event_data.get('id', f"EVT_{len(st.session_state.events_list):04d}"),
+                            title=event_data['name'],
+                            date=str(event_data['date']),
+                            time=str(event_data['time']),
+                            location=event_data['location'],
+                            category="General",
+                            priority=event_data['priority'],
+                            description=event_data['description']
+                        )
+                        st.session_state.event_tree.insert(event_data['name'], event_node)
+                        # Store for redo
+                        st.session_state.redo_stack.push({
+                            'type': 'add_event',
+                            'data': event_data
+                        })
+                        # Save to file
+                        st.session_state.file_handler.save_events(st.session_state.events_list)
+                        st.success(f"↩️ Undid: Deleted '{event_data['name']}'")
+                        st.rerun()
                 else:
                     st.info("Nothing to undo")
         
         with col2b:
-            if st.button("↪️ Redo", use_container_width=True):
-                st.info("Redo functionality coming soon")
+            if st.button("↪️ Redo Event", use_container_width=True):
+                if not st.session_state.redo_stack.is_empty():
+                    action = st.session_state.redo_stack.pop()
+                    if action['type'] == 'add_event':
+                        # Redo add: add the event back
+                        event_data = action['data']
+                        st.session_state.events_list.append(event_data)
+                        # Add back to BST
+                        from event_search_tree import EventNode
+                        event_node = EventNode(
+                            event_id=event_data.get('id', f"EVT_{len(st.session_state.events_list):04d}"),
+                            title=event_data['name'],
+                            date=str(event_data['date']),
+                            time=str(event_data['time']),
+                            location=event_data['location'],
+                            category="General",
+                            priority=event_data['priority'],
+                            description=event_data['description']
+                        )
+                        st.session_state.event_tree.insert(event_data['name'], event_node)
+                        # Store for undo
+                        st.session_state.undo_stack.push({
+                            'type': 'delete_event',
+                            'data': event_data
+                        })
+                        # Save to file
+                        st.session_state.file_handler.save_events(st.session_state.events_list)
+                        st.success(f"↪️ Redid: Added '{event_data['name']}'")
+                        st.rerun()
+                    elif action['type'] == 'delete_event':
+                        # Redo delete: remove the event
+                        event_data = action['data']
+                        if st.session_state.events_list:
+                            removed_event = st.session_state.events_list.pop()
+                            # Remove from BST
+                            st.session_state.event_tree.delete(removed_event['name'])
+                            # Store for undo
+                            st.session_state.undo_stack.push({
+                                'type': 'add_event',
+                                'data': removed_event
+                            })
+                            # Save to file
+                            st.session_state.file_handler.save_events(st.session_state.events_list)
+                            # Save updated BST to file
+                            event_tree_data = []
+                            all_events = st.session_state.event_tree.inorder_traversal()
+                            for key, event_node in all_events:
+                                event_tree_data.append({
+                                    'event_id': event_node.event_id,
+                                    'title': event_node.title,
+                                    'date': event_node.date,
+                                    'time': event_node.time,
+                                    'location': event_node.location,
+                                    'category': event_node.category,
+                                    'priority': event_node.priority,
+                                    'description': event_node.description
+                                })
+                            st.session_state.file_handler.save_event_tree_data(event_tree_data)
+                            st.success(f"↪️ Redid: Deleted '{removed_event['name']}'")
+                            st.rerun()
+                else:
+                    st.info("Nothing to redo")
 
 # Task Scheduler Module
 def task_scheduler():
@@ -664,6 +786,14 @@ def task_scheduler():
                     
                     # Add to queue
                     st.session_state.tasks.enqueue(task)
+                    
+                    # Store for undo
+                    st.session_state.undo_stack.push({
+                        'type': 'add_task',
+                        'data': task
+                    })
+                    # Clear redo stack when new action is performed
+                    st.session_state.redo_stack.clear()
                     
                     # Save tasks to file immediately
                     st.session_state.file_handler.save_tasks(st.session_state.tasks_list)
@@ -703,6 +833,14 @@ def task_scheduler():
                         task['status'] = 'Completed'
                         break
                 
+                # Store for undo
+                st.session_state.undo_stack.push({
+                    'type': 'complete_task',
+                    'data': completed_task
+                })
+                # Clear redo stack when new action is performed
+                st.session_state.redo_stack.clear()
+                
                 # Save tasks to file immediately
                 st.session_state.file_handler.save_tasks(st.session_state.tasks_list)
                 
@@ -710,6 +848,86 @@ def task_scheduler():
                 st.rerun()
             else:
                 st.info("No pending tasks to complete")
+        
+        # Task Undo/Redo buttons
+        col3a, col3b = st.columns(2)
+        with col3a:
+            if st.button("↩️ Undo Task", use_container_width=True):
+                if not st.session_state.undo_stack.is_empty():
+                    action = st.session_state.undo_stack.pop()
+                    if action['type'] == 'add_task':
+                        # Undo add: remove the task
+                        if st.session_state.tasks_list:
+                            removed_task = st.session_state.tasks_list.pop()
+                            # Remove from queue if it's still there
+                            # Note: Queue doesn't have a direct remove method, so we'll just update the list
+                            # Store for redo
+                            st.session_state.redo_stack.push({
+                                'type': 'delete_task',
+                                'data': removed_task
+                            })
+                            # Save to file
+                            st.session_state.file_handler.save_tasks(st.session_state.tasks_list)
+                            st.success(f"↩️ Undid: Added '{removed_task['name']}'")
+                            st.rerun()
+                    elif action['type'] == 'complete_task':
+                        # Undo complete: mark task as pending again
+                        task_data = action['data']
+                        for task in st.session_state.tasks_list:
+                            if task['id'] == task_data['id']:
+                                task['status'] = 'Pending'
+                                # Add back to queue
+                                st.session_state.tasks.enqueue(task)
+                                break
+                        # Store for redo
+                        st.session_state.redo_stack.push({
+                            'type': 'complete_task',
+                            'data': task_data
+                        })
+                        # Save to file
+                        st.session_state.file_handler.save_tasks(st.session_state.tasks_list)
+                        st.success(f"↩️ Undid: Completed '{task_data['name']}'")
+                        st.rerun()
+                else:
+                    st.info("Nothing to undo")
+        
+        with col3b:
+            if st.button("↪️ Redo Task", use_container_width=True):
+                if not st.session_state.redo_stack.is_empty():
+                    action = st.session_state.redo_stack.pop()
+                    if action['type'] == 'add_task':
+                        # Redo add: add the task back
+                        task_data = action['data']
+                        st.session_state.tasks_list.append(task_data)
+                        if task_data['status'] == 'Pending':
+                            st.session_state.tasks.enqueue(task_data)
+                        # Store for undo
+                        st.session_state.undo_stack.push({
+                            'type': 'delete_task',
+                            'data': task_data
+                        })
+                        # Save to file
+                        st.session_state.file_handler.save_tasks(st.session_state.tasks_list)
+                        st.success(f"↪️ Redid: Added '{task_data['name']}'")
+                        st.rerun()
+                    elif action['type'] == 'complete_task':
+                        # Redo complete: mark task as completed again
+                        task_data = action['data']
+                        for task in st.session_state.tasks_list:
+                            if task['id'] == task_data['id']:
+                                task['status'] = 'Completed'
+                                break
+                        # Store for undo
+                        st.session_state.undo_stack.push({
+                            'type': 'complete_task',
+                            'data': task_data
+                        })
+                        # Save to file
+                        st.session_state.file_handler.save_tasks(st.session_state.tasks_list)
+                        st.success(f"↪️ Redid: Completed '{task_data['name']}'")
+                        st.rerun()
+                else:
+                    st.info("Nothing to redo")
 
 # Event Search Tree Module
 def event_search_tree():

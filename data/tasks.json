@@ -1,3 +1,21 @@
 {
-    "tasks": []
+  "tasks": [
+    {
+      "name": "go to gym",
+      "priority": "Medium",
+      "deadline": "2025-08-12",
+      "description": "aksjnj xsa",
+      "id": 1,
+      "status": "Completed"
+    },
+    {
+      "name": "solve questions",
+      "priority": "Medium",
+      "deadline": "2025-08-12",
+      "description": "aksjnj xsa",
+      "id": 2,
+      "status": "Completed"
+    }
+  ],
+  "last_updated": "2025-08-12T09:48:11.314397"
 }

@@ -6,7 +6,6 @@ def main():
     print("🏫 Campus Connect and Plan")
     print("=" * 50)
     
-    # Check if streamlit is installed
     try:
         import streamlit
         print("✅ Streamlit is installed")
