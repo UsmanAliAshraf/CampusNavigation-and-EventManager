@@ -1,7 +1,7 @@
 # 🏫 Campus Connect Navigation & Event Planner System
 
 A comprehensive GUI-based application for UET students to navigate campus, manage events, schedule tasks, and search events efficiently using various data structures and algorithms.
-
+Check the project here: [https://campusnavigation-and-eventmanager-pwimnoxpnuj9ki8ch2zqvl.streamlit.app/]
 ## 🎯 Project Overview
 
 This project demonstrates real-world application of Data Structures and Algorithms concepts through a practical campus management system. It showcases:
